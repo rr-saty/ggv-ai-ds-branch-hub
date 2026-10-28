@@ -76,7 +76,7 @@
     if(!rows.length) return setEmpty("eventList","No upcoming events published.");
     el.innerHTML=rows.map(e=>'<article class="event-card"><div class="event-date"><strong>' + esc(dateLabel(e.starts_at,{day:"2-digit"})) + '</strong><small>' + esc(dateLabel(e.starts_at,{month:"short"}).toUpperCase()) + '</small></div><div><h4>' + esc(e.title) + '</h4><p>' + esc(e.description || e.location || "Check the event details with branch faculty.") + (e.location ? " · " + esc(e.location) : "") + '</p>' + (e.registration_url ? '<a class="meta" href="' + esc(safeHref(e.registration_url)) + '" target="_blank" rel="noopener noreferrer">Registration details ↗</a>' : '') + '</div></article>').join("");
   }
-  function renderData(data) {
+  function renderData(data, now) {
     renderNotices(data.notices); renderSchedule(expandRecurringSchedules(data.schedules, now)); renderDeadlines(data.deadlines); renderResources(data.resources); renderEvents(data.events);
     setStat("noticeStat",data.notices.length); setStat("deadlineStat",data.deadlines.length); setStat("resourceStat",data.resources.length); setStat("eventStat",data.events.length);
   }
@@ -100,7 +100,7 @@
     const names=["notices","schedules","deadlines","resources","events"];
     const data={};
     jobs.forEach((result,i)=>data[names[i]]=result.error?[]:(result.data||[]));
-    renderData(data);
+    renderData(data, now);
     $("#dataStatus").textContent=errors.length ? "Some data unavailable — check database policies" : "Live database · " + new Date().toLocaleTimeString([],{hour:"2-digit",minute:"2-digit"});
   }
   window.refreshBranchContent=loadPublicData;
@@ -117,7 +117,7 @@
     event.preventDefault();
     const form=event.currentTarget, status=$("#formStatus"), button=form.querySelector('button[type="submit"]');
     const apiBase=(config.API_BASE_URL||"").replace(/\/$/,"");
-    if(!apiBase){status.className="form-note error";status.textContent="Automation is not connected yet. A staff-approved Vercel endpoint and authenticated n8n workflow must be configured first.";return;}
+    if(!apiBase){status.className="form-note error";status.textContent="Automation is not connected yet. Configure the Vercel API endpoint and Activepieces webhook first.";return;}
     const payload=Object.fromEntries(new FormData(form).entries());
     if(payload.title.trim().length<3||payload.details.trim().length<3){status.className="form-note error";status.textContent="Enter a title and details for staff review.";return;}
     button.disabled=true; status.className="form-note"; status.textContent="Submitting request…";
