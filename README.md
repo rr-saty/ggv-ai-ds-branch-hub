@@ -12,7 +12,7 @@ A responsive student-facing dashboard for the AI & Data Science branch at Guru G
 ## Current setup
 
 - Repository initialized; no production secrets are committed.
-- Supabase project ref: `qohpmiockdgotdqaqerr` (project was previously paused and a restore was requested; verify it is `ACTIVE` before running SQL or testing the app).
+- Supabase project ref: `qohpmiockdgotdqaqerr` (`ACTIVE_HEALTHY`). The branch hub schema migration `ggv_ai_ds_branch_hub_20261029` is applied. Existing `History` and `User` tables were retained.
 - SQL migration: `supabase/migrations/202610290001_branch_hub.sql`.
 - Browser configuration lives in `config.js`. The Supabase URL and publishable/anon key are public values; **never** place a service-role/secret key in frontend files.
 
@@ -25,9 +25,9 @@ A responsive student-facing dashboard for the AI & Data Science branch at Guru G
 
 ## Configure Supabase
 
-1. Confirm the `Manushyaa` project is active and backed up if it contains any data.
-2. Inspect the SQL migration and run it in the Supabase SQL Editor. It creates the branch-hub tables, profile role helper, timestamps and row-level security (RLS) policies. Review policies before production, especially if the project contains existing data.
-3. Get the project URL and publishable (or legacy anon) key from Supabase project settings and set them in `config.js`. These can be exposed in the browser; the service-role key cannot.
+1. The `Manushyaa` project is active. Its existing `History` and `User` tables were left in place.
+2. The branch hub migration has already been applied. It creates the branch-hub tables, profile role helper, timestamps and row-level security (RLS) policies. Review policies before production.
+3. `config.js` is already set to the Manushyaa project URL and its publishable key. The publishable key is designed for browser use; the service-role key must remain server-side.
 4. Enable the Email auth provider. Create the initial authorized staff account. After that user signs up, promote the verified account in SQL Editor using the exact email:
 
    ```sql
@@ -64,7 +64,7 @@ Set `API_BASE_URL` in `config.js` to your Vercel deployment origin. CORS alone i
 - Supabase service-role/secret key: n8n secret/credential only; never commit it.
 - Google Calendar OAuth authorization: Google account permitted to read the official calendar, plus OAuth setup/consent as required by Google Workspace policy.
 - SMTP host, port, username, password/TLS and a verified sender; use a test recipient first.
-- Vercel `N8N_WEBHOOK_URL`, `ALLOWED_ORIGINS` and optional OpenAI key.
+- Vercel `N8N_WEBHOOK_URL`, `N8N_WEBHOOK_SECRET`, `ALLOWED_ORIGINS` and optional OpenAI key.
 - University/branch approval to publish timetable and deadline data and send notifications.
 
 No live Google Calendar or email connection is active until you configure the relevant credentials and test the workflow. Do not place credentials in public issues, chat messages, frontend code, or committed JSON exports.
