@@ -1,0 +1,210 @@
+{
+  "name": "GGV AI & DS — Approved Email Notifications",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ggv-ai-ds-approved-email",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "email-webhook",
+      "name": "Receive Approved Email Job",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        180,
+        300
+      ],
+      "webhookId": "ggv-ai-ds-approved-email",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "CONNECT_PRIVATE_BACKEND_HEADER_CREDENTIAL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const x = $json.body ?? $json;\n// This webhook requires Header Auth. Only the trusted staff-approval backend should hold that credential.\nif (x.approved !== true) return [{json:{send:false,status:'pending_review',message:'Email not sent: approval required.'}}];\nconst type = String(x.type || 'notice');\nif (!['notice','deadline','event','resource'].includes(type)) throw new Error('Unsupported email type');\nconst title = String(x.title || '').trim();\nconst details = String(x.details || '').trim();\nif (title.length < 3 || title.length > 160 || details.length < 3 || details.length > 5000) throw new Error('Invalid title/details');\nreturn [{json:{send:true,type,title,details,audience:String(x.audience || 'AI & DS students').slice(0,100),date:String(x.date || '').slice(0,40),receivedAt:new Date().toISOString()}}];"
+      },
+      "id": "validate-email",
+      "name": "Validate Approved Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "send",
+              "leftValue": "={{ $json.send }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "email-gate",
+      "name": "Approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        660,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "REPLACE_WITH_VERIFIED_SENDER_EMAIL",
+        "toEmail": "REPLACE_WITH_APPROVED_BRANCH_RECIPIENT_EMAIL",
+        "subject": "={{ '[GGV AI & DS] ' + $json.title }}",
+        "emailFormat": "text",
+        "text": "={{ $json.title + '\\n\\n' + $json.details + ($json.date ? '\\n\\nDate: ' + $json.date : '') + '\\n\\nAudience: ' + $json.audience + '\\n\\nSent by GGV AI & DS Branch Hub automation.' }}",
+        "options": {}
+      },
+      "id": "send-email",
+      "name": "Send Branch Email",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        900,
+        210
+      ],
+      "credentials": {
+        "smtp": {
+          "id": "",
+          "name": "CONNECT_SMTP_CREDENTIAL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { status: 'sent', message: 'Email node executed. Check SMTP/provider delivery result.' } }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "email-success",
+      "name": "Respond Email Accepted",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        1150,
+        210
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { status: 'pending_review', message: 'Email not sent; approval required.' } }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "email-pending",
+      "name": "Respond Pending Approval",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        900,
+        410
+      ]
+    },
+    {
+      "parameters": {
+        "content": "SETUP REQUIRED BEFORE ACTIVATION\n• Create an n8n Header Auth credential and give it only to a trusted server-side approval endpoint.\n• Connect SMTP credentials (host, port, username, password/TLS).\n• Replace the sender with an address verified by your provider and recipient with an approved test mailbox or branch list.\n• An `approved` flag alone is not authentication; the webhook is set to require Header Auth as an additional control.\n• Keep inactive until a protected staff approval path exists and test only with a test recipient first.",
+        "height": 290,
+        "width": 405
+      },
+      "id": "email-note",
+      "name": "Email Setup Notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        35
+      ]
+    }
+  ],
+  "connections": {
+    "Receive Approved Email Job": {
+      "main": [
+        [
+          {
+            "node": "Validate Approved Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Approved Message": {
+      "main": [
+        [
+          {
+            "node": "Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?": {
+      "main": [
+        [
+          {
+            "node": "Send Branch Email",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Pending Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Branch Email": {
+      "main": [
+        [
+          {
+            "node": "Respond Email Accepted",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
