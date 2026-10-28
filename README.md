@@ -13,7 +13,7 @@ A responsive student-facing dashboard for the AI & Data Science branch at Guru G
 
 - Repository initialized; no production secrets are committed.
 - Supabase project ref: `qohpmiockdgotdqaqerr` (`ACTIVE_HEALTHY`). The branch hub schema migration `ggv_ai_ds_branch_hub_20261029` is applied. Existing `History` and `User` tables were retained.
-- SQL migration: `supabase/migrations/202610290001_branch_hub.sql`.
+- SQL migrations (all applied to Manushyaa): `202610290001_branch_hub.sql` (schema/RLS), `202610290002_security_hardening.sql` (function grants/indexes), `202610290003_staff_review_queue.sql` (private request queue and staff approval RPC), and `202610290004_review_rpc_null_role_guard.sql` (role guard).
 - Browser configuration lives in `config.js`. The Supabase URL and publishable/anon key are public values; **never** place a service-role/secret key in frontend files.
 
 ## Deploy to GitHub Pages
@@ -41,11 +41,11 @@ A responsive student-facing dashboard for the AI & Data Science branch at Guru G
 
 ## Google Calendar → Supabase
 
-Import `n8n/ggv-google-calendar-to-supabase-sync.json`. Create a Google Calendar OAuth2 credential in n8n for an account authorized to read the official branch calendar; do not use a private calendar without permission. Set the Supabase project ref and store the Supabase service-role key as an n8n credential/secret, never in GitHub. Events whose title begins `[DEADLINE]` are mapped to `deadlines`; other events go to `schedules`. Test on a safe calendar before activating. Event deletion/cancellation reconciliation should be added before treating the sync as authoritative.
+Import `n8n/ggv-google-calendar-to-supabase-sync.json`. Create a Google Calendar OAuth2 credential in n8n for an account authorized to read the official branch calendar; do not use a private calendar without permission. The workflow already points to Manushyaa and has its public publishable key in the `apikey` header. In both Supabase HTTP nodes, connect the n8n HTTP Header Auth credential named `SUPABASE_SERVICE_ROLE_AUTHORIZATION_HEADER`, configured as header `Authorization` with value `Bearer <Manushyaa service-role key>`. Keep the secret only in n8n Credentials, never in the JSON or GitHub. Events whose title begins `[DEADLINE]` are mapped to `deadlines`; other events go to `schedules`. Test on a safe calendar before activating. Event deletion/cancellation reconciliation should be added before treating the sync as authoritative.
 
 ## Approved email notifications
 
-Import `n8n/ggv-approved-email-notifications.json`. Configure SMTP credentials and a verified sender in n8n, set a test recipient, and keep the workflow inactive until authentication and approval checks are implemented and tested. An `approved` flag in a webhook body is **not** authentication. Production calls must originate from a server-side, authenticated staff-approval path; do not wire a public form directly to mass email.
+Import `n8n/ggv-approved-email-notifications.json`. Configure its Header Auth credential, SMTP credentials and verified sender in n8n, and set a test recipient. It remains inactive and is not yet connected to the staff approval button. An `approved` flag in a webhook body is **not** authentication. Do not send branch-wide emails until a protected server-side route connects the reviewed request to the email workflow and a test delivery has succeeded.
 
 ## Optional Vercel API
 
