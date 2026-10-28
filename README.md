@@ -50,7 +50,8 @@ Import `n8n/ggv-approved-email-notifications.json`. Configure SMTP credentials a
 
 Import the repository into Vercel if you need server endpoints (`api/`). Configure server-only environment variables there:
 
-- `N8N_WEBHOOK_URL` — trusted production n8n webhook URL
+- `N8N_WEBHOOK_URL` — production URL for the `ggv-ai-ds-notifications-router` webhook
+- `N8N_WEBHOOK_SECRET` — private value matching the n8n Header Auth credential for `x-ggv-automation-secret`; keep it only in Vercel and n8n credentials
 - `ALLOWED_ORIGINS` — exact GitHub Pages origin
 - `OPENAI_API_KEY` — optional; only for the AI assistant
 - `OPENAI_MODEL` — optional model name supported by your account
