@@ -13,7 +13,8 @@ module.exports=async function handler(req,res){
   const origin=req.headers.origin;
   if(origin&&!allowedOrigins.includes(origin))return res.status(403).json({error:"Origin is not allowed"});
   const webhookUrl=process.env.N8N_WEBHOOK_URL;
-  if(!webhookUrl)return res.status(503).json({error:"Request intake is not configured. Set N8N_WEBHOOK_URL in Vercel."});
+  const webhookSecret=process.env.N8N_WEBHOOK_SECRET;
+  if(!webhookUrl||!webhookSecret)return res.status(503).json({error:"Request intake is not configured. Set N8N_WEBHOOK_URL and N8N_WEBHOOK_SECRET in Vercel."});
   let body=req.body;
   if(typeof body==="string"){try{body=JSON.parse(body)}catch{return res.status(400).json({error:"Invalid JSON body"});}}
   if(!body||typeof body!=="object"||Array.isArray(body))return res.status(400).json({error:"Expected a JSON object"});
@@ -28,7 +29,7 @@ module.exports=async function handler(req,res){
   const forwarded={type,title,details,audience:String(body.audience||"AI & DS students").slice(0,80),date:String(body.date||"").slice(0,30)||null,source:"ggv-ai-ds-branch-hub",status:"pending_review",approved:false,submittedAt:new Date().toISOString()};
   const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),10000);
   try{
-    const upstream=await fetch(webhookUrl,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(forwarded),signal:controller.signal});
+    const upstream=await fetch(webhookUrl,{method:"POST",headers:{"Content-Type":"application/json","x-ggv-automation-secret":webhookSecret},body:JSON.stringify(forwarded),signal:controller.signal});
     if(!upstream.ok)return res.status(502).json({error:"Request queue returned an error. Check n8n execution logs."});
     return res.status(202).json({ok:true,message:"Request received for staff review. No official notice or email was sent."});
   }catch(error){return res.status(502).json({error:error.name==="AbortError"?"Request intake timed out":"Could not reach the request queue"});}
