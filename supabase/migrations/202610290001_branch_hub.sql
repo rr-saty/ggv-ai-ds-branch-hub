@@ -96,14 +96,14 @@ create table if not exists public.notification_log (
 );
 
 create index if not exists notices_status_publish_idx on public.notices(status, publish_at desc);
-create unique index if not exists schedules_external_id_unique on public.schedules(external_source, external_id) where external_id is not null;
-create unique index if not exists deadlines_external_id_unique on public.deadlines(external_source, external_id) where external_id is not null;
+create unique index if not exists schedules_external_id_unique on public.schedules(external_source, external_id);
+create unique index if not exists deadlines_external_id_unique on public.deadlines(external_source, external_id);
 create index if not exists schedules_starts_at_idx on public.schedules(starts_at);
 create index if not exists deadlines_due_at_idx on public.deadlines(due_at);
 create index if not exists events_starts_at_idx on public.events(starts_at);
 
 create schema if not exists private;
-revoke all on schema private from public;
+revoke all on schema private from public, anon, authenticated;
 -- current_user_role() returns only the role belonging to auth.uid(). For an anonymous user it returns NULL.
 grant usage on schema private to anon, authenticated;
 
@@ -112,7 +112,7 @@ returns text language sql stable security definer set search_path = ''
 as $$
   select p.role from public.profiles p where p.id = (select auth.uid())
 $$;
-revoke all on function private.current_user_role() from public;
+revoke all on function private.current_user_role() from public, anon, authenticated;
 grant execute on function private.current_user_role() to anon, authenticated;
 
 create or replace function public.handle_new_user()
