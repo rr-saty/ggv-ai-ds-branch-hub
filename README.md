@@ -18,10 +18,11 @@ A responsive student-facing dashboard for the AI & Data Science branch at Guru G
 
 ## Deploy to GitHub Pages
 
-1. In repository **Settings → Pages**, choose **Deploy from a branch**, select `main` and `/ (root)`, then save.
-2. Wait for GitHub Pages to publish the site. The URL will be shown in Settings → Pages.
-3. Set the exact published origin in Supabase **Authentication → URL Configuration → Site URL / Redirect URLs**.
-4. Add the published URL to the allowed origins used by the optional Vercel API.
+1. In repository **Settings → Pages**, set **Build and deployment → Source** to **GitHub Actions**.
+2. The committed `.github/workflows/pages.yml` workflow packages only the static frontend files and deploys on pushes to `main`. Check the **Actions** tab for the first run.
+3. After the run succeeds, the expected project site URL is `https://rr-saty.github.io/ggv-ai-ds-branch-hub/` (confirm the final URL in Settings → Pages).
+4. In Supabase **Authentication → URL Configuration**, set the site URL and add the exact GitHub Pages URL to allowed redirect URLs.
+5. For Vercel CORS, use the origin only: `https://rr-saty.github.io` (no repository path).
 
 ## Configure Supabase
 
