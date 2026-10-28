@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#090c16"><meta name="description" content="AI & Data Science Branch Hub — GGV Bilaspur">
+  <title>AI & DS Branch Hub | GGV Bilaspur</title><link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <a class="brand" href="#overview"><span class="brand-icon">A<span>✦</span></span><span><b>AI & DS</b><small>BRANCH HUB</small></span></a>
+    <p class="overline side-label">WORKSPACE</p>
+    <nav class="nav">
+      <a class="nav-item active" href="#overview">◫ <span>Overview</span></a>
+      <a class="nav-item" href="#notices">◉ <span>Notices</span></a>
+      <a class="nav-item" href="#schedule">▤ <span>Schedule</span></a>
+      <a class="nav-item" href="#deadlines">◷ <span>Deadlines</span></a>
+      <a class="nav-item" href="#resources">▧ <span>Resources</span></a>
+      <a class="nav-item" href="#events">✳ <span>Events</span></a>
+    </nav>
+    <div class="sidebar-bottom"><div class="workspace-status"><i></i><span><b>Branch workspace</b><small>AI & DS · IT Department</small></span></div><p>Guru Ghasidas Vishwavidyalaya<br>Bilaspur, Chhattisgarh</p></div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <button class="icon-btn mobile-menu" id="menuToggle" aria-label="Open menu">☰</button>
+      <div class="crumb">GGV <span>/</span> School of Studies of Engineering & Technology <span>/</span> <b>AI & DS</b></div>
+      <div class="top-actions"><span class="live-pill"><i></i> Branch workspace</span><span id="authStatus" class="auth-status">Loading…</span><button class="avatar" id="loginOpen" title="Staff sign in">↗</button></div>
+    </header>
+    <section class="hero" id="overview">
+      <div class="hero-copy"><p class="overline"><span class="line"></span> YOUR ACADEMIC COMMAND CENTER</p><h1>One branch.<br><em>Everything in sync.</em></h1><p class="hero-description">Notices, class schedules, learning resources, deadlines and events — organized for the AI & Data Science branch.</p><div class="hero-actions"><a class="button primary" href="#notices">Explore branch updates <span>↗</span></a><a class="button secondary" href="#resources">Open resources</a></div><div class="hero-meta"><span>✦ Built for students and faculty</span><span>·</span><span>GGV Bilaspur</span></div></div>
+      <div class="hero-art" aria-hidden="true"><div class="ring ring-1"></div><div class="ring ring-2"></div><div class="grid-art"></div><div class="glass-tag tag-top"><span>✦</span><div><b>AI & DS</b><small>LEARN · BUILD · AUTOMATE</small></div></div><div class="hero-symbol">AI<span>+</span><br>DS</div><div class="glass-tag tag-bottom"><i></i><div><b>Branch Hub</b><small>ONE CONNECTED WORKSPACE</small></div><span>↗</span></div></div>
+    </section>
+    <section class="stats-grid">
+      <article class="stat-card"><div class="stat-label">Published notices <span class="stat-icon violet">◉</span></div><strong id="noticeStat">—</strong><small>Latest branch updates</small></article>
+      <article class="stat-card"><div class="stat-label">Upcoming deadlines <span class="stat-icon orange">◷</span></div><strong id="deadlineStat">—</strong><small>Keep work on track</small></article>
+      <article class="stat-card"><div class="stat-label">Learning resources <span class="stat-icon blue">▧</span></div><strong id="resourceStat">—</strong><small>Quick access to study material</small></article>
+      <article class="stat-card"><div class="stat-label">Upcoming events <span class="stat-icon green">✳</span></div><strong id="eventStat">—</strong><small>Learn, connect, participate</small></article>
+    </section>
+    <div class="section-heading"><div><p class="overline">THE LATEST</p><h2>Branch overview</h2></div><span class="updated-label"><i></i><span id="dataStatus">Connect Supabase for live data</span></span></div>
+    <div class="content-grid">
+      <section class="panel" id="notices"><div class="panel-head"><div><span class="section-icon violet">◉</span><h3>Notice board</h3></div><span class="tiny-label">LATEST UPDATES</span></div><div id="noticeList" class="notice-list"><div class="empty-state">Loading notices…</div></div></section>
+      <section class="panel" id="schedule"><div class="panel-head"><div><span class="section-icon blue">▤</span><h3>Schedule</h3></div><span class="day-tag" id="todayLabel">UPCOMING</span></div><div id="scheduleList" class="schedule-list"><div class="empty-state">Loading schedule…</div></div><div class="panel-foot">Verify official timetable changes with branch faculty.</div></section>
+    </div>
+    <div class="lower-grid">
+      <section class="panel" id="deadlines"><div class="panel-head"><div><span class="section-icon orange">◷</span><h3>Deadlines & tasks</h3></div><span class="tiny-label">UP NEXT</span></div><div id="deadlineList" class="deadline-list"><div class="empty-state">Loading deadlines…</div></div></section>
+      <section class="panel" id="resources"><div class="panel-head"><div><span class="section-icon green">▧</span><h3>Resource library</h3></div><span class="tiny-label">STUDY MATERIAL</span></div><div id="resourceList" class="resource-list"><div class="empty-state">Loading resources…</div></div></section>
+    </div>
+    <section class="panel events-panel" id="events"><div class="panel-head"><div><span class="section-icon pink">✳</span><h3>Events & opportunities</h3></div><span class="tiny-label">COMING UP</span></div><div id="eventList" class="event-list"><div class="empty-state">Loading events…</div></div></section>
+    <section class="automation-section" id="automation"><div class="automation-copy"><p class="overline"><span class="line"></span> BUILT FOR BRANCH OPERATIONS</p><h2>Less repetitive work.<br><em>More time to build.</em></h2><p>Submit an update request for staff review. Official messages should only be published or emailed after an authorized faculty member or administrator approves them.</p><div class="automation-points"><span>✓ Staff approval first</span><span>✓ Server-side credentials</span><span>✓ Email workflow ready to configure</span></div></div>
+      <form id="automationForm" class="automation-form"><div class="form-heading"><span class="form-icon">✦</span><div><h3>Request a branch update</h3><p>Requests are not automatically official notices.</p></div></div>
+        <label for="updateType">Request type</label><select id="updateType" name="type" required><option value="notice">Notice</option><option value="deadline">Deadline reminder</option><option value="event">Event announcement</option><option value="resource">New resource</option></select>
+        <label for="updateTitle">Title</label><input id="updateTitle" name="title" maxlength="100" placeholder="e.g. DSA assignment submission" required>
+        <label for="updateDetails">Details</label><textarea id="updateDetails" name="details" rows="3" maxlength="1200" placeholder="Add the information for staff to review…" required></textarea>
+        <div class="form-row"><div><label for="updateDate">Date (optional)</label><input id="updateDate" name="date" type="date"></div><div><label for="updateAudience">Audience</label><select id="updateAudience" name="audience"><option>AI & DS students</option><option>Faculty</option><option>Branch administration</option><option>Everyone</option></select></div></div>
+        <button class="button primary submit-btn" type="submit">Submit for review <span>↗</span></button><p class="form-note" id="formStatus" role="status" aria-live="polite">Automation is disabled until its server endpoint and approval workflow are configured.</p>
+      </form></section>
+    <section class="panel admin-panel" id="adminPanel" hidden><div class="panel-head"><div><span class="section-icon violet">⚙</span><h3>Staff content manager</h3></div><button class="button secondary" id="signOut" type="button">Sign out</button></div>
+      <form id="adminCreateForm" class="admin-create-form"><div class="form-row"><div><label for="adminItemType">Content type</label><select id="adminItemType"><option value="notice">Notice</option><option value="deadline">Deadline</option><option value="event">Event</option><option value="resource">Resource (URL in details)</option></select></div><div><label for="adminItemDate">Date / due date</label><input id="adminItemDate" type="datetime-local"></div></div><label for="adminItemTitle">Title</label><input id="adminItemTitle" maxlength="160" required><label for="adminItemBody">Details / URL</label><textarea id="adminItemBody" maxlength="5000" rows="3" required></textarea><button class="button primary" type="submit">Save to database ↗</button><p id="adminCreateStatus" class="form-note" role="status"></p></form>
+    </section>
+    <footer class="footer"><span>AI & DS Branch Hub <b>·</b> GGV Bilaspur</span><span>Student-built prototype <b>·</b> Verify official information before publishing</span></footer>
+  </main>
+</div>
+<div id="loginPanel" class="modal-backdrop" hidden><section class="login-card" role="dialog" aria-modal="true" aria-labelledby="loginTitle"><button class="modal-close" id="loginClose" aria-label="Close sign in">×</button><span class="form-icon">✦</span><h2 id="loginTitle">Staff sign in</h2><p>Authorized faculty and administrators only. Student accounts cannot publish branch updates.</p><form id="loginForm"><label for="loginEmail">Email</label><input id="loginEmail" type="email" autocomplete="username" required><label for="loginPassword">Password</label><input id="loginPassword" type="password" autocomplete="current-password" required><button class="button primary submit-btn" type="submit">Sign in securely</button><p id="authStatusModal" class="form-note" role="status"></p></form></section></div>
+<button id="chatFab" class="chat-fab" aria-label="Open AI assistant">✦ <span>Ask AI</span></button>
+<section id="chatPanel" class="chat-panel" hidden aria-label="AI branch assistant"><div class="chat-header"><div><strong>Branch AI Assistant</strong><small>Verify official dates with faculty</small></div><button id="chatClose" aria-label="Close chat">×</button></div><div id="chatMessages" class="chat-messages"><div class="chat-message assistant">Hi! Ask me about AI & Data Science concepts, study planning, or how to use this hub. I cannot verify unpublished university information.</div></div><form id="chatForm" class="chat-form"><input id="chatInput" maxlength="1500" placeholder="Ask a question…" required><button type="submit" aria-label="Send message">➤</button></form></section>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script src="./config.js" defer></script><script src="./app.js" defer></script><script src="./auth.js" defer></script><script src="./chat.js" defer></script>
+</body></html>
