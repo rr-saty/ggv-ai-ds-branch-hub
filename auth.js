@@ -5,22 +5,51 @@
   const status = $("authStatus");
   const modal = $("loginPanel");
   const adminPanel = $("adminPanel");
+  const reviewPanel = $("reviewPanel");
   const loginButton = $("loginOpen");
   const loginForm = $("loginForm");
   const modalStatus = $("authStatusModal");
   const setStatus = value => { if(status) status.textContent=value; };
   const openModal = () => { modal.hidden=false; $("loginEmail")?.focus(); };
   const closeModal = () => { modal.hidden=true; if(modalStatus)modalStatus.textContent=""; };
+  const esc = value => String(value ?? "").replace(/[&<>"']/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+  const dateLabel = value => { const d = value ? new Date(value) : null; return d && !Number.isNaN(d.valueOf()) ? d.toLocaleString([], {dateStyle:"medium",timeStyle:"short"}) : "Date not provided"; };
   loginButton?.addEventListener("click",openModal);
   $("loginClose")?.addEventListener("click",closeModal);
   modal?.addEventListener("click",e=>{if(e.target===modal)closeModal();});
   document.addEventListener("keydown",e=>{if(e.key==="Escape")closeModal();});
+
+  async function loadPendingRequests() {
+    const list=$("reviewRequestList");
+    if(!db || !list)return;
+    list.innerHTML='<div class="empty-state">Loading requests…</div>';
+    try {
+      const {data,error}=await db.from("branch_update_requests")
+        .select("id,request_type,title,details,audience,requested_date,submitted_at,status")
+        .eq("status","pending_review").order("submitted_at",{ascending:false}).limit(30);
+      if(error)throw error;
+      if(!data?.length){list.innerHTML='<div class="empty-state">No requests awaiting review.</div>';return;}
+      list.innerHTML=data.map(item=>{
+        const noteId="review-note-"+esc(item.id);
+        return '<article class="review-request" data-request-id="'+esc(item.id)+'">'+
+          '<div class="review-request-head"><h4>'+esc(item.title)+'</h4><span class="review-kind">'+esc(item.request_type.toUpperCase())+'</span></div>'+
+          '<p>'+esc(item.details)+'</p>'+
+          '<div class="review-request-meta">Audience: '+esc(item.audience)+' · Date: '+esc(dateLabel(item.requested_date))+'<br>Submitted: '+esc(dateLabel(item.submitted_at))+'</div>'+
+          '<label for="'+noteId+'" class="review-note-label">Review note (optional)</label><textarea class="review-note" id="'+noteId+'" rows="2" maxlength="1000" placeholder="Reason for rejection or staff note…"></textarea>'+
+          '<div class="review-actions"><button type="button" class="button primary" data-review-decision="approved" data-request-id="'+esc(item.id)+'">Approve & publish</button><button type="button" class="button reject" data-review-decision="rejected" data-request-id="'+esc(item.id)+'">Reject</button></div>'+
+          '</article>';
+      }).join("");
+    } catch(error) {
+      list.innerHTML='<div class="empty-state">Could not load review queue: '+esc(error.message||"Check the migration and staff permissions.")+'</div>';
+    }
+  }
 
   async function refreshAuth() {
     if(!db) {
       setStatus("Supabase not configured");
       if(loginButton)loginButton.classList.remove("hidden");
       if(adminPanel)adminPanel.hidden=true;
+      if(reviewPanel)reviewPanel.hidden=true;
       return;
     }
     try {
@@ -29,6 +58,7 @@
       if(!session) {
         if(loginButton)loginButton.classList.remove("hidden");
         if(adminPanel)adminPanel.hidden=true;
+        if(reviewPanel)reviewPanel.hidden=true;
         setStatus("Staff sign in");
         return;
       }
@@ -38,13 +68,15 @@
       const staff=["faculty","admin"].includes(role);
       if(loginButton)loginButton.classList.toggle("hidden",true);
       if(adminPanel)adminPanel.hidden=!staff;
+      if(reviewPanel)reviewPanel.hidden=!staff;
       setStatus((profile?.display_name || session.user.email || "Signed in")+" · "+role);
-      if(!staff) setStatus((profile?.display_name || session.user.email || "Signed in")+" · student (read only)");
+      if(staff) await loadPendingRequests();
       if(window.refreshBranchContent) await window.refreshBranchContent();
     } catch(error) {
       setStatus("Auth setup needed");
       if(adminPanel)adminPanel.hidden=true;
-      if(modalStatus)modalStatus.textContent="Could not load profile: "+(error.message||"Check whether the Supabase migration has been applied.");
+      if(reviewPanel)reviewPanel.hidden=true;
+      if(modalStatus)modalStatus.textContent="Could not load profile: "+(error.message||"Check the Supabase migration and account setup.");
     }
   }
 
@@ -68,6 +100,34 @@
     const {error}=await db.auth.signOut();
     if(error){setStatus(error.message);return;}
     await refreshAuth();
+  });
+
+  $("refreshRequests")?.addEventListener("click",loadPendingRequests);
+  $("reviewRequestList")?.addEventListener("click",async e=>{
+    const button=e.target.closest("[data-review-decision]");
+    if(!button||!db)return;
+    const decision=button.dataset.reviewDecision;
+    const requestId=button.dataset.requestId;
+    const card=button.closest(".review-request");
+    const note=card?.querySelector(".review-note")?.value.trim() || "";
+    if(decision==="approved" && !window.confirm("Approve this request and publish it to the branch hub?"))return;
+    if(decision==="rejected" && !window.confirm("Reject this request? It will not be published."))return;
+    card?.querySelectorAll("button").forEach(b=>b.disabled=true);
+    const list=$("reviewRequestList");
+    try {
+      const {error}=await db.rpc("review_branch_update_request",{
+        p_request_id:requestId,p_decision:decision,p_review_note:note
+      });
+      if(error)throw error;
+      await loadPendingRequests();
+      if(window.refreshBranchContent)await window.refreshBranchContent();
+    } catch(error) {
+      const message=document.createElement("p");
+      message.className="form-note error";
+      message.textContent="Review failed: "+(error.message||"Check your role and database migration.");
+      card?.appendChild(message);
+      card?.querySelectorAll("button").forEach(b=>b.disabled=false);
+    }
   });
 
   $("adminCreateForm")?.addEventListener("submit",async e=>{
