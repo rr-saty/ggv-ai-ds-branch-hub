@@ -18,6 +18,8 @@ A responsive student-facing dashboard for the AI & Data Science branch at Guru G
 
 ## Deploy to GitHub Pages
 
+**Current status:** The Pages workflow is committed, but its first run failed because GitHub Pages has not yet been enabled for this repository. Complete step 1 below, then rerun the workflow in the Actions tab.
+
 1. In repository **Settings → Pages**, set **Build and deployment → Source** to **GitHub Actions**.
 2. The committed `.github/workflows/pages.yml` workflow packages only the static frontend files and deploys on pushes to `main`. Check the **Actions** tab for the first run.
 3. After the run succeeds, the expected project site URL is `https://rr-saty.github.io/ggv-ai-ds-branch-hub/` (confirm the final URL in Settings → Pages).
