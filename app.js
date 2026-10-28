@@ -23,6 +23,35 @@
       return '<article class="notice-item"><div class="notice-type ' + esc(category) + '">' + (category==="event"?"✳":category==="academic"?"▤":"◉") + '</div><div><h4>' + esc(n.title) + '</h4><p>' + esc(n.body) + '</p><span class="meta">' + esc(dateLabel(n.created_at, {day:"numeric",month:"short",year:"numeric"})) + '</span></div><span class="notice-tag">' + esc(tag) + '</span></article>';
     }).join("");
   }
+  function expandRecurringSchedules(rows, now) {
+    const horizon = new Date(now.getTime() + 42 * 86400000);
+    const occurrences = [];
+    rows.forEach((s) => {
+      const start = new Date(s.starts_at);
+      const end = new Date(s.ends_at);
+      if (!s.recurrence_rule || !s.recurrence_rule.includes("FREQ=WEEKLY")) {
+        if (end >= new Date(now.getTime() - 86400000)) occurrences.push(s);
+        return;
+      }
+      const dayMatch = s.recurrence_rule.match(/BYDAY=([A-Z,]+)/);
+      const days = (dayMatch ? dayMatch[1].split(",") : []).map(day => ({MO:1,TU:2,WE:3,TH:4,FR:5,SA:6,SU:0}[day])).filter(day => day !== undefined);
+      if (!days.length) { if (end >= new Date(now.getTime() - 86400000)) occurrences.push(s); return; }
+      const duration = end.getTime() - start.getTime();
+      const cursor = new Date(Math.max(start.getTime(), now.getTime() - 86400000));
+      cursor.setHours(0,0,0,0);
+      while (cursor <= horizon) {
+        if (cursor >= new Date(start.getFullYear(), start.getMonth(), start.getDate()) && days.includes(cursor.getDay())) {
+          const occurrenceStart = new Date(cursor);
+          occurrenceStart.setHours(start.getHours(), start.getMinutes(), start.getSeconds(), start.getMilliseconds());
+          if (occurrenceStart >= new Date(now.getTime() - 86400000)) {
+            occurrences.push({...s, starts_at: occurrenceStart.toISOString(), ends_at: new Date(occurrenceStart.getTime() + duration).toISOString()});
+          }
+        }
+        cursor.setDate(cursor.getDate() + 1);
+      }
+    });
+    return occurrences.sort((a,b) => new Date(a.starts_at) - new Date(b.starts_at)).slice(0,8);
+  }
   function renderSchedule(rows) {
     $("#todayLabel").textContent = new Date().toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"}).toUpperCase();
     const el=$("#scheduleList");
@@ -48,7 +77,7 @@
     el.innerHTML=rows.map(e=>'<article class="event-card"><div class="event-date"><strong>' + esc(dateLabel(e.starts_at,{day:"2-digit"})) + '</strong><small>' + esc(dateLabel(e.starts_at,{month:"short"}).toUpperCase()) + '</small></div><div><h4>' + esc(e.title) + '</h4><p>' + esc(e.description || e.location || "Check the event details with branch faculty.") + (e.location ? " · " + esc(e.location) : "") + '</p>' + (e.registration_url ? '<a class="meta" href="' + esc(safeHref(e.registration_url)) + '" target="_blank" rel="noopener noreferrer">Registration details ↗</a>' : '') + '</div></article>').join("");
   }
   function renderData(data) {
-    renderNotices(data.notices); renderSchedule(data.schedules); renderDeadlines(data.deadlines); renderResources(data.resources); renderEvents(data.events);
+    renderNotices(data.notices); renderSchedule(expandRecurringSchedules(data.schedules, now)); renderDeadlines(data.deadlines); renderResources(data.resources); renderEvents(data.events);
     setStat("noticeStat",data.notices.length); setStat("deadlineStat",data.deadlines.length); setStat("resourceStat",data.resources.length); setStat("eventStat",data.events.length);
   }
   async function loadPublicData() {
@@ -62,7 +91,7 @@
     const now=new Date();
     const jobs=await Promise.all([
       db.from("notices").select("id,title,body,category,created_at,publish_at,status").eq("status","published").or("publish_at.is.null,publish_at.lte."+now.toISOString()).order("created_at",{ascending:false}).limit(8),
-      db.from("schedules").select("id,title,course_code,faculty_name,room,starts_at,ends_at").gte("ends_at",new Date(now.getTime()-86400000).toISOString()).order("starts_at").limit(8),
+      db.from("schedules").select("id,title,course_code,faculty_name,room,starts_at,ends_at,recurrence_rule").gte("ends_at",new Date(now.getTime()-86400000).toISOString()).order("starts_at").limit(8),
       db.from("deadlines").select("id,title,description,due_at,status").eq("status","upcoming").order("due_at").limit(8),
       db.from("resources").select("id,title,description,url,category").eq("status","published").order("created_at",{ascending:false}).limit(8),
       db.from("events").select("id,title,description,starts_at,ends_at,location,registration_url").eq("status","published").gte("starts_at",now.toISOString()).order("starts_at").limit(6)
