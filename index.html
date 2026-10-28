@@ -54,6 +54,11 @@
         <div class="form-row"><div><label for="updateDate">Date (optional)</label><input id="updateDate" name="date" type="date"></div><div><label for="updateAudience">Audience</label><select id="updateAudience" name="audience"><option>AI & DS students</option><option>Faculty</option><option>Branch administration</option><option>Everyone</option></select></div></div>
         <button class="button primary submit-btn" type="submit">Submit for review <span>↗</span></button><p class="form-note" id="formStatus" role="status" aria-live="polite">Automation is disabled until its server endpoint and approval workflow are configured.</p>
       </form></section>
+    <section class="panel review-panel" id="reviewPanel" hidden>
+      <div class="panel-head"><div><span class="section-icon orange">✓</span><h3>Requests awaiting review</h3></div><button class="button secondary" id="refreshRequests" type="button">Refresh</button></div>
+      <p class="review-intro">Only authorized faculty and administrators can approve or reject submissions. Approval publishes the relevant item to the branch hub; rejection leaves public content unchanged.</p>
+      <div id="reviewRequestList" class="review-request-list"><div class="empty-state">Loading requests…</div></div>
+    </section>
     <section class="panel admin-panel" id="adminPanel" hidden><div class="panel-head"><div><span class="section-icon violet">⚙</span><h3>Staff content manager</h3></div><button class="button secondary" id="signOut" type="button">Sign out</button></div>
       <form id="adminCreateForm" class="admin-create-form"><div class="form-row"><div><label for="adminItemType">Content type</label><select id="adminItemType"><option value="notice">Notice</option><option value="deadline">Deadline</option><option value="event">Event</option><option value="resource">Resource (URL in details)</option></select></div><div><label for="adminItemDate">Date / due date</label><input id="adminItemDate" type="datetime-local"></div></div><label for="adminItemTitle">Title</label><input id="adminItemTitle" maxlength="160" required><label for="adminItemBody">Details / URL</label><textarea id="adminItemBody" maxlength="5000" rows="3" required></textarea><button class="button primary" type="submit">Save to database ↗</button><p id="adminCreateStatus" class="form-note" role="status"></p></form>
     </section>
