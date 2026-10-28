@@ -47,11 +47,7 @@
           "parameters": [
             {
               "name": "apikey",
-              "value": "SET_USING_N8N_CREDENTIALS_NOT_GITHUB"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer SET_USING_N8N_CREDENTIALS_NOT_GITHUB"
+              "value": "sb_publishable_DLB_REYI6oW_rBwjml-kjQ_F37t2h0_"
             },
             {
               "name": "Content-Type",
@@ -73,7 +69,9 @@
               "neverError": false
             }
           }
-        }
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
       },
       "id": "save-pending",
       "name": "Save Pending Review to Supabase",
@@ -82,7 +80,13 @@
       "position": [
         680,
         300
-      ]
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "SUPABASE_SERVICE_ROLE_AUTHORIZATION_HEADER"
+        }
+      }
     },
     {
       "parameters": {
