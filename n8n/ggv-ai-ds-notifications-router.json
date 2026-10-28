@@ -1,0 +1,163 @@
+{
+  "name": "GGV AI & DS — Request Intake Queue",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "ggv-ai-ds-notify",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "intake-webhook",
+      "name": "Receive Request from Vercel",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        180,
+        300
+      ],
+      "webhookId": "ggv-ai-ds-notify",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "CONNECT_VERCEL_HEADER_AUTH_CREDENTIAL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const x = $json.body ?? $json;\nconst allowed = ['notice','deadline','event','resource'];\nconst type = String(x.type || '');\nconst title = String(x.title || '').trim();\nconst details = String(x.details || '').trim();\nif (!allowed.includes(type)) throw new Error('Unsupported request type');\nif (title.length < 3 || title.length > 160) throw new Error('Title must be 3-160 characters');\nif (details.length < 3 || details.length > 1200) throw new Error('Details must be 3-1200 characters');\nconst category = type === 'event' ? 'event' : (type === 'deadline' ? 'academic' : 'general');\nreturn [{json:{type,title,details,audience:String(x.audience || 'AI & DS students').slice(0,80),date:String(x.date || '').slice(0,30),category,status:'pending_review',approved:false,receivedAt:new Date().toISOString()}}];"
+      },
+      "id": "validate-request",
+      "name": "Validate and Mark Pending",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        420,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://qohpmiockdgotdqaqerr.supabase.co/rest/v1/notices",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "SET_USING_N8N_CREDENTIALS_NOT_GITHUB"
+            },
+            {
+              "name": "Authorization",
+              "value": "Bearer SET_USING_N8N_CREDENTIALS_NOT_GITHUB"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "Prefer",
+              "value": "return=minimal"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ JSON.stringify({title:$json.title,body:$json.details,category:$json.category,audience:$json.audience,status:'pending_review'}) }}",
+        "options": {
+          "response": {
+            "response": {
+              "neverError": false
+            }
+          }
+        }
+      },
+      "id": "save-pending",
+      "name": "Save Pending Review to Supabase",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { status: 'pending_review', message: 'Request saved for staff review. No email was sent.' } }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "intake-response",
+      "name": "Return Pending Review",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [
+        940,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "content": "SETUP BEFORE ACTIVATION\n1) Configure Header Auth on the webhook and the same header name/value in Vercel as N8N_WEBHOOK_SECRET. Suggested header: x-ggv-automation-secret.\n2) Configure the two Supabase REST headers using an n8n secret/credential containing the Manushyaa service-role key. Never commit real secrets.\n3) Apply the Supabase migration first.\n4) This workflow only creates a notice in pending_review. It does not publish it or send email. Staff must review before public release.\n5) Add rate limiting/abuse controls on the Vercel endpoint before public launch.",
+        "height": 300,
+        "width": 410
+      },
+      "id": "setup-note",
+      "name": "Setup Notes",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        420,
+        30
+      ]
+    }
+  ],
+  "connections": {
+    "Receive Request from Vercel": {
+      "main": [
+        [
+          {
+            "node": "Validate and Mark Pending",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate and Mark Pending": {
+      "main": [
+        [
+          {
+            "node": "Save Pending Review to Supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save Pending Review to Supabase": {
+      "main": [
+        [
+          {
+            "node": "Return Pending Review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
