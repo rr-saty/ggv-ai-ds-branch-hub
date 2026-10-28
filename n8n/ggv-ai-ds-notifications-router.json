@@ -27,7 +27,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const x = $json.body ?? $json;\nconst allowed = ['notice','deadline','event','resource'];\nconst type = String(x.type || '');\nconst title = String(x.title || '').trim();\nconst details = String(x.details || '').trim();\nif (!allowed.includes(type)) throw new Error('Unsupported request type');\nif (title.length < 3 || title.length > 160) throw new Error('Title must be 3-160 characters');\nif (details.length < 3 || details.length > 1200) throw new Error('Details must be 3-1200 characters');\nconst category = type === 'event' ? 'event' : (type === 'deadline' ? 'academic' : 'general');\nreturn [{json:{type,title,details,audience:String(x.audience || 'AI & DS students').slice(0,80),date:String(x.date || '').slice(0,30),category,status:'pending_review',approved:false,receivedAt:new Date().toISOString()}}];"
+        "jsCode": "const x = $json.body ?? $json;\nconst allowed = ['notice','deadline','event','resource'];\nconst type = String(x.type || '');\nconst title = String(x.title || '').trim();\nconst details = String(x.details || '').trim();\nif (!allowed.includes(type)) throw new Error('Unsupported request type');\nif (title.length < 3 || title.length > 160) throw new Error('Title must be 3-160 characters');\nif (details.length < 3 || details.length > 1200) throw new Error('Details must be 3-1200 characters');\nlet requestedDate = null;\nconst rawDate = String(x.date || '').trim();\nif (rawDate) {\n  const d = new Date(rawDate + (rawDate.length === 10 ? 'T12:00:00+05:30' : ''));\n  if (Number.isNaN(d.valueOf())) throw new Error('Invalid requested date');\n  requestedDate = d.toISOString();\n}\nif (type === 'resource') {\n  let u;\n  try { u = new URL(details); } catch { throw new Error('Resource request must include a valid URL'); }\n  if (!['https:','http:'].includes(u.protocol)) throw new Error('Resource URL must use HTTP or HTTPS');\n}\nreturn [{json:{row:{\n  request_type:type, title, details,\n  audience:String(x.audience || 'AI & DS students').slice(0,80),\n  requested_date:requestedDate, status:'pending_review'\n}}}];"
       },
       "id": "validate-request",
       "name": "Validate and Mark Pending",
@@ -41,7 +41,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://qohpmiockdgotdqaqerr.supabase.co/rest/v1/notices",
+        "url": "https://qohpmiockdgotdqaqerr.supabase.co/rest/v1/branch_update_requests",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
@@ -62,7 +62,7 @@
         "sendBody": true,
         "contentType": "raw",
         "rawContentType": "application/json",
-        "body": "={{ JSON.stringify({title:$json.title,body:$json.details,category:$json.category,audience:$json.audience,status:'pending_review'}) }}",
+        "body": "={{ JSON.stringify($json.row) }}",
         "options": {
           "response": {
             "response": {
@@ -107,7 +107,7 @@
     },
     {
       "parameters": {
-        "content": "SETUP BEFORE ACTIVATION\n1) Configure Header Auth on the webhook and the same header name/value in Vercel as N8N_WEBHOOK_SECRET. Suggested header: x-ggv-automation-secret.\n2) Configure the two Supabase REST headers using an n8n secret/credential containing the Manushyaa service-role key. Never commit real secrets.\n3) Apply the Supabase migration first.\n4) This workflow only creates a notice in pending_review. It does not publish it or send email. Staff must review before public release.\n5) Add rate limiting/abuse controls on the Vercel endpoint before public launch.",
+        "content": "SETUP BEFORE ACTIVATION\n1) Configure Header Auth on the webhook with request header `x-ggv-automation-secret`; set the same secret as `N8N_WEBHOOK_SECRET` in Vercel.\n2) The Supabase request node uses an n8n HTTP Header Auth credential named `SUPABASE_SERVICE_ROLE_AUTHORIZATION_HEADER`; create it with header name `Authorization` and value `Bearer <Manushyaa service-role key>`. The publishable apikey is already set in this export. Never commit the service-role key.\n3) Apply the branch hub migrations first. The request queue is RLS-protected; public/anonymous users cannot read or write it directly.\n4) This workflow only creates a `pending_review` request. It does not publish an item or send email. An authorized staff member must review it in the dashboard.\n5) Add rate limiting/abuse controls to the Vercel endpoint before public launch.",
         "height": 300,
         "width": 410
       },
