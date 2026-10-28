@@ -107,11 +107,7 @@
           "parameters": [
             {
               "name": "apikey",
-              "value": "SET_USING_N8N_CREDENTIALS_NOT_GITHUB"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer SET_USING_N8N_CREDENTIALS_NOT_GITHUB"
+              "value": "sb_publishable_DLB_REYI6oW_rBwjml-kjQ_F37t2h0_"
             },
             {
               "name": "Content-Type",
@@ -133,7 +129,9 @@
               "neverError": false
             }
           }
-        }
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
       },
       "id": "upsert-deadline",
       "name": "Upsert Deadline in Supabase",
@@ -142,7 +140,13 @@
       "position": [
         1150,
         220
-      ]
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "SUPABASE_SERVICE_ROLE_AUTHORIZATION_HEADER"
+        }
+      }
     },
     {
       "parameters": {
@@ -153,11 +157,7 @@
           "parameters": [
             {
               "name": "apikey",
-              "value": "SET_USING_N8N_CREDENTIALS_NOT_GITHUB"
-            },
-            {
-              "name": "Authorization",
-              "value": "Bearer SET_USING_N8N_CREDENTIALS_NOT_GITHUB"
+              "value": "sb_publishable_DLB_REYI6oW_rBwjml-kjQ_F37t2h0_"
             },
             {
               "name": "Content-Type",
@@ -179,7 +179,9 @@
               "neverError": false
             }
           }
-        }
+        },
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth"
       },
       "id": "upsert-schedule",
       "name": "Upsert Schedule in Supabase",
@@ -188,7 +190,13 @@
       "position": [
         1150,
         390
-      ]
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "SUPABASE_SERVICE_ROLE_AUTHORIZATION_HEADER"
+        }
+      }
     },
     {
       "parameters": {
