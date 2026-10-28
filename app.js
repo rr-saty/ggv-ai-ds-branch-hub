@@ -94,7 +94,7 @@
     const now=new Date();
     const jobs=await Promise.all([
       db.from("notices").select("id,title,body,category,created_at,publish_at,status").eq("status","published").or("publish_at.is.null,publish_at.lte."+now.toISOString()).order("created_at",{ascending:false}).limit(8),
-      db.from("schedules").select("id,title,course_code,faculty_name,room,starts_at,ends_at,recurrence_rule").gte("ends_at",new Date(now.getTime()-86400000).toISOString()).order("starts_at").limit(8),
+      db.from("schedules").select("id,title,course_code,faculty_name,room,starts_at,ends_at,recurrence_rule").gte("ends_at",new Date(now.getTime()-86400000).toISOString()).order("starts_at").limit(100),
       db.from("deadlines").select("id,title,description,due_at,status").eq("status","upcoming").order("due_at").limit(8),
       db.from("resources").select("id,title,description,url,category").eq("status","published").order("created_at",{ascending:false}).limit(8),
       db.from("events").select("id,title,description,starts_at,ends_at,location,registration_url").eq("status","published").gte("starts_at",now.toISOString()).order("starts_at").limit(6)
