@@ -24,33 +24,36 @@
     }).join("");
   }
   function expandRecurringSchedules(rows, now) {
-    const horizon = new Date(now.getTime() + 42 * 86400000);
+    // This card is labelled with today's date, so show only occurrences on the
+    // user's local calendar day. Do not fill it with the next 8 occurrences
+    // across several weeks (which made the same labs appear repeatedly).
+    const dayStart = new Date(now);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(dayStart);
+    dayEnd.setDate(dayEnd.getDate() + 1);
+    const today = dayStart.getDay();
+    const dayCodes = {0:"SU",1:"MO",2:"TU",3:"WE",4:"TH",5:"FR",6:"SA"};
     const occurrences = [];
     rows.forEach((s) => {
       const start = new Date(s.starts_at);
       const end = new Date(s.ends_at);
       if (!s.recurrence_rule || !s.recurrence_rule.includes("FREQ=WEEKLY")) {
-        if (end >= new Date(now.getTime() - 86400000)) occurrences.push(s);
+        if (start >= dayStart && start < dayEnd && end > now) occurrences.push(s);
         return;
       }
+      if (start >= dayEnd) return;
       const dayMatch = s.recurrence_rule.match(/BYDAY=([A-Z,]+)/);
-      const days = (dayMatch ? dayMatch[1].split(",") : []).map(day => ({MO:1,TU:2,WE:3,TH:4,FR:5,SA:6,SU:0}[day])).filter(day => day !== undefined);
-      if (!days.length) { if (end >= new Date(now.getTime() - 86400000)) occurrences.push(s); return; }
+      const days = dayMatch ? dayMatch[1].split(",") : [];
+      if (!days.includes(dayCodes[today])) return;
+      const occurrenceStart = new Date(dayStart);
+      occurrenceStart.setHours(start.getHours(), start.getMinutes(), start.getSeconds(), start.getMilliseconds());
       const duration = end.getTime() - start.getTime();
-      const cursor = new Date(Math.max(start.getTime(), now.getTime() - 86400000));
-      cursor.setHours(0,0,0,0);
-      while (cursor <= horizon) {
-        if (cursor >= new Date(start.getFullYear(), start.getMonth(), start.getDate()) && days.includes(cursor.getDay())) {
-          const occurrenceStart = new Date(cursor);
-          occurrenceStart.setHours(start.getHours(), start.getMinutes(), start.getSeconds(), start.getMilliseconds());
-          if (occurrenceStart >= new Date(now.getTime() - 86400000)) {
-            occurrences.push({...s, starts_at: occurrenceStart.toISOString(), ends_at: new Date(occurrenceStart.getTime() + duration).toISOString()});
-          }
-        }
-        cursor.setDate(cursor.getDate() + 1);
+      const occurrenceEnd = new Date(occurrenceStart.getTime() + duration);
+      if (occurrenceEnd > now) {
+        occurrences.push({...s, starts_at: occurrenceStart.toISOString(), ends_at: occurrenceEnd.toISOString()});
       }
     });
-    return occurrences.sort((a,b) => new Date(a.starts_at) - new Date(b.starts_at)).slice(0,8);
+    return occurrences.sort((a,b) => new Date(a.starts_at) - new Date(b.starts_at));
   }
   function renderSchedule(rows) {
     $("#todayLabel").textContent = new Date().toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"}).toUpperCase();
